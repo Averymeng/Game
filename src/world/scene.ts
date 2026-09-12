@@ -8,9 +8,8 @@ export interface World {
 
 export function createWorld(container: HTMLElement): World {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x8ec5fc);
-  // 远处雾，营造浮空世界的纵深感
-  scene.fog = new THREE.Fog(0x8ec5fc, 45, 130);
+  scene.background = new THREE.Color(0xa8dcff);
+  scene.fog = new THREE.Fog(0xa8dcff, 40, 110);
 
   const camera = new THREE.PerspectiveCamera(
     55,
@@ -18,22 +17,22 @@ export function createWorld(container: HTMLElement): World {
     0.1,
     300
   );
-  camera.position.set(0, 16, 22);
+  camera.position.set(0, 12.5, 10);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  // 不启用色调映射，保持糖果色明亮饱和
   container.appendChild(renderer.domElement);
 
-  // 半球光（天光 + 地面反光，柔和的糖果色基调）
-  const hemi = new THREE.HemisphereLight(0xdfefff, 0xffe0c0, 1.1);
+  // 环境光弱一点，让方向光主导明暗（立体感）
+  const hemi = new THREE.HemisphereLight(0xdfefff, 0xffe0c0, 0.6);
   scene.add(hemi);
 
-  // 主方向光（太阳），投射阴影
-  const sun = new THREE.DirectionalLight(0xffffff, 2.4);
+  // 主方向光（太阳）强一点，突出明暗面
+  const sun = new THREE.DirectionalLight(0xffffff, 3.2);
   sun.position.set(18, 28, 12);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);

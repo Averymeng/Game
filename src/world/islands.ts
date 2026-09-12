@@ -26,7 +26,7 @@ export function buildWorld(scene: THREE.Scene): void {
 function buildPlaza(scene: THREE.Scene): void {
   const plaza = new THREE.Mesh(
     new THREE.CylinderGeometry(6.5, 7, 1.2, 48),
-    new THREE.MeshToonMaterial({ color: 0xffe8a3 })
+    new THREE.MeshToonMaterial({ color: 0xfff0b0 })
   );
   plaza.position.y = -0.6;
   plaza.castShadow = true;
@@ -44,7 +44,7 @@ function buildPlaza(scene: THREE.Scene): void {
 }
 
 function buildIslands(scene: THREE.Scene): void {
-  const radius = 15;
+  const radius = 10;
   ISLANDS.forEach((island, i) => {
     const angle = (i / ISLANDS.length) * Math.PI * 2;
     island.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);

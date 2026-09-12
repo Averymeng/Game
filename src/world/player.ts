@@ -1,17 +1,10 @@
 import * as THREE from 'three';
 
-export interface InputState {
-  forward: boolean;
-  backward: boolean;
-  left: boolean;
-  right: boolean;
-}
-
 // 蛋仔风玩家角色：白色蛋形身体 + 眼睛 + 腮红 + 头顶小叶子
 export class Player {
   readonly group: THREE.Group;
   private readonly speed = 9;
-  private readonly limit = 18; // 软边界半径，防止走丢
+  private readonly limit = 16; // 软边界半径，防止走丢
 
   constructor() {
     this.group = new THREE.Group();
@@ -56,20 +49,12 @@ export class Player {
     this.group.add(sprout);
   }
 
-  update(dt: number, input: InputState): void {
-    let dx = 0;
-    let dz = 0;
-    if (input.forward) dz -= 1;
-    if (input.backward) dz += 1;
-    if (input.left) dx -= 1;
-    if (input.right) dx += 1;
+  update(dt: number, moveDir: THREE.Vector3): void {
+    if (moveDir.lengthSq() === 0) return;
 
-    if (dx === 0 && dz === 0) return;
-
-    const dir = new THREE.Vector3(dx, 0, dz).normalize();
-    this.group.position.addScaledVector(dir, this.speed * dt);
+    this.group.position.addScaledVector(moveDir, this.speed * dt);
     // 脸朝向移动方向（模型默认脸朝 -Z）
-    this.group.rotation.y = Math.atan2(-dir.x, -dir.z);
+    this.group.rotation.y = Math.atan2(-moveDir.x, -moveDir.z);
 
     // 软边界
     const p = this.group.position;
