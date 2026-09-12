@@ -1,47 +1,70 @@
 import * as THREE from 'three';
 import './style.css';
+import { createWorld } from './world/scene';
+import { buildWorld } from './world/islands';
+import { Player, type InputState } from './world/player';
+import { createLoop } from './core/gameLoop';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+const { scene, camera, renderer } = createWorld(app);
 
-// 场景（天空蓝背景）
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x8ec5fc);
+// 世界
+buildWorld(scene);
 
-// 相机
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  100
-);
-camera.position.z = 5;
+// 玩家
+const player = new Player();
+scene.add(player.group);
 
-// 渲染器
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-app.appendChild(renderer.domElement);
+// 输入
+const input: InputState = {
+  forward: false,
+  backward: false,
+  left: false,
+  right: false,
+};
 
-// 测试立方体（验证 three 可用；M1 换成蛋仔风世界）
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshStandardMaterial({ color: 0xff6b9d });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+const keyMap: Record<string, keyof InputState> = {
+  KeyW: 'forward',
+  ArrowUp: 'forward',
+  KeyS: 'backward',
+  ArrowDown: 'backward',
+  KeyA: 'left',
+  ArrowLeft: 'left',
+  KeyD: 'right',
+  ArrowRight: 'right',
+};
 
-// 灯光
-const light = new THREE.DirectionalLight(0xffffff, 2);
-light.position.set(2, 3, 4);
-scene.add(light);
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+window.addEventListener('keydown', (e) => {
+  const k = keyMap[e.code];
+  if (k) {
+    input[k] = true;
+    e.preventDefault();
+  }
+});
 
-// 渲染循环
-function animate() {
-  requestAnimationFrame(animate);
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
+window.addEventListener('keyup', (e) => {
+  const k = keyMap[e.code];
+  if (k) input[k] = false;
+});
+
+// 相机跟随（斜俯视，跟随角色）
+const cameraOffset = new THREE.Vector3(0, 16, 22);
+const cameraTarget = new THREE.Vector3();
+
+function update(dt: number): void {
+  player.update(dt, input);
+
+  cameraTarget.copy(player.group.position);
+  const desired = cameraTarget.clone().add(cameraOffset);
+  camera.position.lerp(desired, Math.min(1, dt * 5));
+  camera.lookAt(cameraTarget);
+}
+
+function render(): void {
   renderer.render(scene, camera);
 }
-animate();
+
+createLoop(update, render);
 
 // 自适应窗口
 window.addEventListener('resize', () => {
